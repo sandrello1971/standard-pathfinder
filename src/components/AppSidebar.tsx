@@ -56,10 +56,10 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
-                        isActive
-                          ? "bg-primary text-primary-foreground font-medium"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      }
+  isActive
+    ? "bg-primary text-primary-foreground font-medium"
+    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+}
                       end={item.url === "/"}
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
