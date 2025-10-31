@@ -24,16 +24,16 @@ export function AppSidebar() {
   const { open } = useSidebar();
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
-      <div className="p-4 border-b bg-card">
+    <Sidebar collapsible="icon" className="border-r bg-sidebar-background">
+      <div className="p-4 border-b border-sidebar-border">
         {open ? (
           <div className="flex items-center gap-2">
             <div className="rounded-lg bg-primary p-2 shrink-0">
               <FileCheck className="h-5 w-5 text-primary-foreground" />
             </div>
             <div className="min-w-0">
-              <h2 className="font-bold text-foreground truncate">QualityDoc</h2>
-              <p className="text-xs text-muted-foreground truncate">Gestione ISO</p>
+              <h2 className="font-bold text-sidebar-foreground truncate">QualityDoc</h2>
+              <p className="text-xs text-sidebar-foreground/70 truncate">Gestione ISO</p>
             </div>
           </div>
         ) : (
@@ -47,7 +47,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          {open && <SidebarGroupLabel>Navigazione</SidebarGroupLabel>}
+          {open && <SidebarGroupLabel className="text-sidebar-foreground/70">Navigazione</SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (

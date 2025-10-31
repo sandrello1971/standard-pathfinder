@@ -22,9 +22,6 @@ const Hero = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-            <Button size="lg" className="text-lg px-8">
-              Inizia Ora
-            </Button>
             <Button size="lg" variant="outline" className="text-lg px-8">
               Scopri di Più
             </Button>
