@@ -32,8 +32,8 @@ export function AppSidebar() {
               <FileCheck className="h-5 w-5 text-primary-foreground" />
             </div>
             <div className="min-w-0">
-              <h2 className="font-bold text-sidebar-foreground truncate">QualityDoc</h2>
-              <p className="text-xs text-sidebar-foreground/70 truncate">Gestione ISO</p>
+              <h2 className="font-bold text-gray-900 truncate">QualityDoc</h2>
+              <p className="text-xs text-gray-600 truncate">Gestione ISO</p>
             </div>
           </div>
         ) : (
@@ -47,7 +47,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          {open && <SidebarGroupLabel className="text-sidebar-foreground/70">Navigazione</SidebarGroupLabel>}
+          {open && <SidebarGroupLabel className="text-gray-600">Navigazione</SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
@@ -58,7 +58,7 @@ export function AppSidebar() {
                       className={({ isActive }) =>
                         isActive
                           ? "bg-primary text-primary-foreground font-medium"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                       }
                       end={item.url === "/"}
                     >
