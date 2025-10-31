@@ -3,6 +3,7 @@ import StatsOverview from "@/components/StatsOverview";
 import DocumentCategories from "@/components/DocumentCategories";
 import RecentDocuments from "@/components/RecentDocuments";
 import AIAssistant from "@/components/AIAssistant";
+import DocumentGenerator from "@/components/DocumentGenerator";
 
 const Index = () => {
   return (
@@ -10,6 +11,7 @@ const Index = () => {
       <Hero />
       <StatsOverview />
       <AIAssistant />
+      <DocumentGenerator />
       <DocumentCategories />
       <RecentDocuments />
     </div>
