@@ -14,7 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      documents: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          author: string | null
+          category: Database["public"]["Enums"]["document_category"]
+          code: string | null
+          created_at: string
+          description: string | null
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          id: string
+          status: Database["public"]["Enums"]["document_status"]
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string | null
+          version: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          author?: string | null
+          category: Database["public"]["Enums"]["document_category"]
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          status?: Database["public"]["Enums"]["document_status"]
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          author?: string | null
+          category?: Database["public"]["Enums"]["document_category"]
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          status?: Database["public"]["Enums"]["document_status"]
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +82,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      document_category:
+        | "iso_9001"
+        | "procedure_operative"
+        | "moduli_template"
+        | "audit_verifiche"
+      document_status: "draft" | "review" | "approved" | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +214,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      document_category: [
+        "iso_9001",
+        "procedure_operative",
+        "moduli_template",
+        "audit_verifiche",
+      ],
+      document_status: ["draft", "review", "approved", "archived"],
+    },
   },
 } as const

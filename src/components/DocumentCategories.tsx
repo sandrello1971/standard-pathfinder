@@ -1,16 +1,34 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FolderOpen, ArrowRight } from "lucide-react";
+import DocumentList from "./DocumentList";
+import DocumentUpload from "./DocumentUpload";
+import type { Database } from "@/integrations/supabase/types";
+
+type DocumentCategory = Database['public']['Enums']['document_category'];
 
 const DocumentCategories = () => {
-  const categories = [
+  const [selectedCategory, setSelectedCategory] = useState<DocumentCategory | null>(null);
+  const [selectedLabel, setSelectedLabel] = useState<string>("");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const categories: Array<{
+    title: string;
+    description: string;
+    documentCount: number;
+    compliance: number;
+    color: "primary" | "success" | "warning" | "destructive";
+    category: DocumentCategory;
+  }> = [
     {
       title: "ISO 9001:2015",
       description: "Sistema di Gestione per la Qualità",
       documentCount: 45,
       compliance: 96,
       color: "primary" as const,
+      category: "iso_9001",
     },
     {
       title: "Procedure Operative",
@@ -18,6 +36,7 @@ const DocumentCategories = () => {
       documentCount: 38,
       compliance: 92,
       color: "success" as const,
+      category: "procedure_operative",
     },
     {
       title: "Moduli e Template",
@@ -25,6 +44,7 @@ const DocumentCategories = () => {
       documentCount: 28,
       compliance: 98,
       color: "warning" as const,
+      category: "moduli_template",
     },
     {
       title: "Audit e Verifiche",
@@ -32,6 +52,7 @@ const DocumentCategories = () => {
       documentCount: 16,
       compliance: 88,
       color: "destructive" as const,
+      category: "audit_verifiche",
     },
   ];
 
@@ -41,14 +62,22 @@ const DocumentCategories = () => {
     return "destructive";
   };
 
+  const openCategory = (category: DocumentCategory, label: string) => {
+    setSelectedCategory(category);
+    setSelectedLabel(label);
+  };
+
   return (
     <section className="py-12 px-4 bg-muted">
       <div className="container mx-auto max-w-6xl">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-foreground mb-2">Categorie Documenti</h2>
-          <p className="text-muted-foreground">
-            Esplora i documenti organizzati per standard e tipologia
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-foreground mb-2">Categorie Documenti</h2>
+            <p className="text-muted-foreground">
+              Esplora i documenti organizzati per standard e tipologia
+            </p>
+          </div>
+          <DocumentUpload onUploadSuccess={() => setRefreshTrigger(prev => prev + 1)} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -80,7 +109,12 @@ const DocumentCategories = () => {
                       {category.compliance}% conforme
                     </Badge>
                   </div>
-                  <Button variant="ghost" size="sm" className="gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => openCategory(category.category, category.title)}
+                  >
                     Apri
                     <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -89,6 +123,16 @@ const DocumentCategories = () => {
             </Card>
           ))}
         </div>
+
+        {selectedCategory && (
+          <DocumentList
+            category={selectedCategory}
+            categoryLabel={selectedLabel}
+            open={!!selectedCategory}
+            onOpenChange={(open) => !open && setSelectedCategory(null)}
+            refreshTrigger={refreshTrigger}
+          />
+        )}
       </div>
     </section>
   );
