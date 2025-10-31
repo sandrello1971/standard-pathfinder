@@ -58,7 +58,7 @@ export function AppSidebar() {
                       className={({ isActive }) =>
                         isActive
                           ? "bg-primary text-primary-foreground font-medium"
-                          : "hover:bg-accent"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent"
                       }
                       end={item.url === "/"}
                     >
