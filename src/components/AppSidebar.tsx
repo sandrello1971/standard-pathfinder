@@ -9,7 +9,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -25,40 +24,46 @@ export function AppSidebar() {
   const { open } = useSidebar();
 
   return (
-    <Sidebar className={open ? "w-64" : "w-14"} collapsible="icon">
-      <div className="p-4 border-b">
-        <div className="flex items-center gap-2">
-          <div className="rounded-lg bg-primary p-2">
-            <FileCheck className="h-5 w-5 text-primary-foreground" />
-          </div>
-          {open && (
-            <div>
-              <h2 className="font-bold text-foreground">QualityDoc</h2>
-              <p className="text-xs text-muted-foreground">Gestione ISO</p>
+    <Sidebar collapsible="icon" className="border-r">
+      <div className="p-4 border-b bg-card">
+        {open ? (
+          <div className="flex items-center gap-2">
+            <div className="rounded-lg bg-primary p-2 shrink-0">
+              <FileCheck className="h-5 w-5 text-primary-foreground" />
             </div>
-          )}
-        </div>
+            <div className="min-w-0">
+              <h2 className="font-bold text-foreground truncate">QualityDoc</h2>
+              <p className="text-xs text-muted-foreground truncate">Gestione ISO</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-center">
+            <div className="rounded-lg bg-primary p-2">
+              <FileCheck className="h-5 w-5 text-primary-foreground" />
+            </div>
+          </div>
+        )}
       </div>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigazione</SidebarGroupLabel>
+          {open && <SidebarGroupLabel>Navigazione</SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
                           ? "bg-primary text-primary-foreground font-medium"
-                          : "hover:bg-muted/50"
+                          : "hover:bg-accent"
                       }
                       end={item.url === "/"}
                     >
-                      <item.icon className="h-4 w-4" />
-                      {open && <span>{item.title}</span>}
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {open && <span className="truncate">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -67,10 +72,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <div className="mt-auto p-4 border-t">
-        <SidebarTrigger className="w-full" />
-      </div>
     </Sidebar>
   );
 }
