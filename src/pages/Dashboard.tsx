@@ -1,11 +1,11 @@
-import Hero from "@/components/Hero";
 import StatsOverview from "@/components/StatsOverview";
+import RecentDocuments from "@/components/RecentDocuments";
 
 const Dashboard = () => {
   return (
     <div className="min-h-screen">
-      <Hero />
       <StatsOverview />
+      <RecentDocuments />
     </div>
   );
 };

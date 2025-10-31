@@ -1,32 +1,66 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, CheckCircle, AlertCircle, Clock } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const StatsOverview = () => {
+  const { data: documentsCount = 0 } = useQuery({
+    queryKey: ["documents-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("documents")
+        .select("*", { count: "exact", head: true });
+      return count || 0;
+    },
+  });
+
+  const { data: reviewCount = 0 } = useQuery({
+    queryKey: ["documents-review-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("documents")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "review");
+      return count || 0;
+    },
+  });
+
+  const { data: draftCount = 0 } = useQuery({
+    queryKey: ["documents-draft-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("documents")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "draft");
+      return count || 0;
+    },
+  });
+
   const stats = [
     {
       title: "Documenti Totali",
-      value: "127",
+      value: documentsCount.toString(),
       icon: FileText,
-      description: "+12 questo mese",
+      description: "Documenti nel sistema",
       variant: "default" as const,
     },
     {
-      title: "Conformità",
-      value: "94%",
+      title: "Documenti Approvati",
+      value: (documentsCount - reviewCount - draftCount).toString(),
       icon: CheckCircle,
       description: "In linea con ISO 9001",
       variant: "success" as const,
     },
     {
       title: "In Revisione",
-      value: "8",
+      value: reviewCount.toString(),
       icon: Clock,
       description: "Documenti pendenti",
       variant: "warning" as const,
     },
     {
-      title: "Azioni Richieste",
-      value: "3",
+      title: "Bozze",
+      value: draftCount.toString(),
       icon: AlertCircle,
       description: "Da completare",
       variant: "destructive" as const,
