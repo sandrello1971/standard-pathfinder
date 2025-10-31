@@ -33,7 +33,7 @@ export function AppSidebar() {
             </div>
             <div className="min-w-0">
               <h2 className="font-bold text-sidebar-foreground truncate">QualityDoc</h2>
-              <p className="text-xs text-sidebar-foreground/70 truncate">Gestione ISO</p>
+              <p className="text-xs text-muted-foreground truncate">Gestione ISO</p>
             </div>
           </div>
         ) : (
@@ -47,7 +47,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          {open && <SidebarGroupLabel className="text-sidebar-foreground/70">Navigazione</SidebarGroupLabel>}
+          {open && <SidebarGroupLabel className="text-muted-foreground">Navigazione</SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
@@ -56,10 +56,10 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
-  isActive
-    ? "bg-primary text-primary-foreground font-medium"
-    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-}
+                        isActive
+                          ? "bg-primary text-primary-foreground font-medium"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      }
                       end={item.url === "/"}
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
