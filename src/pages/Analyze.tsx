@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, FileCheck, Copy } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { analyzeComplianceSchema } from "@/lib/validations";
 
 const Analyze = () => {
   const { toast } = useToast();
@@ -15,10 +17,17 @@ const Analyze = () => {
   const [analysisResult, setAnalysisResult] = useState("");
 
   const analyzeCompliance = async () => {
-    if (!documentText.trim()) {
+    // Validate input
+    const validation = analyzeComplianceSchema.safeParse({
+      documentText,
+      standard: standard || "",
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
       toast({
         title: "Errore",
-        description: "Inserisci il testo del documento da analizzare",
+        description: firstError.message,
         variant: "destructive",
       });
       return;
@@ -28,25 +37,15 @@ const Analyze = () => {
     setAnalysisResult("");
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-compliance`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            documentText,
-            standard,
-          }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke('analyze-compliance', {
+        body: {
+          documentText: validation.data.documentText,
+          standard: validation.data.standard || "ISO 9001:2015",
+        },
+      });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Errore durante l'analisi");
+      if (error) {
+        throw error;
       }
 
       setAnalysisResult(data.analysis);
@@ -107,6 +106,7 @@ const Analyze = () => {
                 id="document"
                 value={documentText}
                 onChange={(e) => setDocumentText(e.target.value)}
+                maxLength={50000}
                 placeholder="Incolla qui il testo della procedura da analizzare...
 
 Esempio:

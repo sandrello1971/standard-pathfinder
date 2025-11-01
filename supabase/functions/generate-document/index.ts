@@ -11,11 +11,48 @@ serve(async (req) => {
   }
 
   try {
-    const { documentType, content, metadata } = await req.json();
+    const { documentType, content, metadata = {} } = await req.json();
     
-    if (!content || !documentType) {
+    // Input validation
+    if (!documentType || typeof documentType !== 'string' || documentType.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Document type and content are required' }),
+        JSON.stringify({ error: 'Document type is required and must be a non-empty string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!content || typeof content !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Content is required and must be a string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (content.length < 10 || content.length > 50000) {
+      return new Response(
+        JSON.stringify({ error: 'Content must be between 10 and 50000 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate metadata fields if present
+    if (metadata.title && (typeof metadata.title !== 'string' || metadata.title.length > 200)) {
+      return new Response(
+        JSON.stringify({ error: 'Title must be a string with max 200 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (metadata.code && (typeof metadata.code !== 'string' || metadata.code.length > 50)) {
+      return new Response(
+        JSON.stringify({ error: 'Code must be a string with max 50 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (metadata.standard && (typeof metadata.standard !== 'string' || metadata.standard.length > 100)) {
+      return new Response(
+        JSON.stringify({ error: 'Standard must be a string with max 100 characters' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

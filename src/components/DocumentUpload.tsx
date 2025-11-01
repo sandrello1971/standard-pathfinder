@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, Loader2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { documentUploadSchema } from "@/lib/validations";
 
 type DocumentCategory = Database['public']['Enums']['document_category'];
 type DocumentStatus = Database['public']['Enums']['document_status'];
@@ -43,10 +44,21 @@ const DocumentUpload = ({ onUploadSuccess }: DocumentUploadProps) => {
   };
 
   const handleUpload = async () => {
-    if (!title || !category) {
+    // Validate input
+    const validation = documentUploadSchema.safeParse({
+      title,
+      code: code || "",
+      description: description || "",
+      author: author || "",
+      version: version || "",
+      category,
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
       toast({
         title: "Errore",
-        description: "Titolo e categoria sono obbligatori",
+        description: firstError.message,
         variant: "destructive",
       });
       return;
@@ -87,16 +99,16 @@ const DocumentUpload = ({ onUploadSuccess }: DocumentUploadProps) => {
       const { error: dbError } = await supabase
         .from('documents')
         .insert({
-          title,
-          code: code || null,
-          category: category as DocumentCategory,
+          title: validation.data.title,
+          code: validation.data.code || null,
+          category: validation.data.category as DocumentCategory,
           status,
-          description: description || null,
+          description: validation.data.description || null,
           file_path: filePath,
           file_name: fileName,
           file_size: fileSize,
-          version,
-          author: author || null,
+          version: validation.data.version || "1.0",
+          author: validation.data.author || null,
           user_id: user.id,
         });
 
@@ -149,6 +161,7 @@ const DocumentUpload = ({ onUploadSuccess }: DocumentUploadProps) => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="es. Procedura Gestione Qualità"
+                maxLength={200}
               />
             </div>
             <div className="space-y-2">
@@ -158,6 +171,7 @@ const DocumentUpload = ({ onUploadSuccess }: DocumentUploadProps) => {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="es. PROC-001-2024"
+                maxLength={50}
               />
             </div>
           </div>
@@ -201,6 +215,7 @@ const DocumentUpload = ({ onUploadSuccess }: DocumentUploadProps) => {
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
                 placeholder="es. Mario Rossi"
+                maxLength={100}
               />
             </div>
             <div className="space-y-2">
@@ -210,6 +225,7 @@ const DocumentUpload = ({ onUploadSuccess }: DocumentUploadProps) => {
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
                 placeholder="es. 1.0"
+                maxLength={20}
               />
             </div>
           </div>
@@ -222,6 +238,7 @@ const DocumentUpload = ({ onUploadSuccess }: DocumentUploadProps) => {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descrizione opzionale del documento..."
               rows={3}
+              maxLength={2000}
             />
           </div>
 

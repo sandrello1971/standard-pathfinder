@@ -11,11 +11,26 @@ serve(async (req) => {
   }
 
   try {
-    const { documentText, standard } = await req.json();
+    const { documentText, standard = "ISO 9001:2015" } = await req.json();
     
-    if (!documentText) {
+    // Input validation
+    if (!documentText || typeof documentText !== 'string') {
       return new Response(
-        JSON.stringify({ error: 'Document text is required' }),
+        JSON.stringify({ error: 'Document text is required and must be a string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (documentText.length < 10 || documentText.length > 50000) {
+      return new Response(
+        JSON.stringify({ error: 'Document text must be between 10 and 50000 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (standard && (typeof standard !== 'string' || standard.length > 100)) {
+      return new Response(
+        JSON.stringify({ error: 'Standard must be a string with max 100 characters' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

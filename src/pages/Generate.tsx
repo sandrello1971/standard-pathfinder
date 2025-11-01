@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Wand2, FileText, Copy } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { generateDocumentSchema } from "@/lib/validations";
 
 const Generate = () => {
   const { toast } = useToast();
@@ -54,12 +56,21 @@ const Generate = () => {
   };
 
   const generateDocument = async () => {
-    const finalType = documentType === "custom" ? customType : documentType;
+    // Validate input
+    const validation = generateDocumentSchema.safeParse({
+      documentType,
+      customType: documentType === "custom" ? customType : "",
+      title,
+      code: code || "",
+      standard: standard || "",
+      content,
+    });
 
-    if (!content.trim() || !finalType) {
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
       toast({
         title: "Errore",
-        description: "Seleziona il tipo di documento e inserisci il contenuto",
+        description: firstError.message,
         variant: "destructive",
       });
       return;
@@ -69,32 +80,20 @@ const Generate = () => {
     setResult("");
 
     try {
-      const metadata: Record<string, string> = {
-        title: title || finalType,
-        code: code || "",
-        standard: standard,
-      };
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-document`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      const { data, error } = await supabase.functions.invoke('generate-document', {
+        body: {
+          documentType: documentType === "custom" ? validation.data.customType : validation.data.documentType,
+          content: validation.data.content,
+          metadata: {
+            title: validation.data.title,
+            code: validation.data.code,
+            standard: validation.data.standard,
           },
-          body: JSON.stringify({
-            documentType: finalType,
-            content,
-            metadata,
-          }),
-        }
-      );
+        },
+      });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Errore durante la generazione");
+      if (error) {
+        throw error;
       }
 
       setResult(data.document);
@@ -207,6 +206,7 @@ const Generate = () => {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder={placeholders[documentType] || "Descrivi il documento da generare..."}
                 className="min-h-[300px]"
+                maxLength={50000}
               />
             </div>
 

@@ -1,7 +1,1 @@
 project_id = "cpgvdzlqcadtfthglsju"
-
-[functions.analyze-compliance]
-verify_jwt = false
-
-[functions.generate-document]
-verify_jwt = false
