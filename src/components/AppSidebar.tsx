@@ -28,18 +28,18 @@ export function AppSidebar() {
       <div className="p-4 border-b border-sidebar-border">
         {open ? (
           <div className="flex items-center gap-2">
-            <div className="rounded-lg bg-primary p-2 shrink-0">
-              <FileCheck className="h-5 w-5 text-primary-foreground" />
+            <div className="rounded-lg bg-sidebar-foreground p-2 shrink-0">
+              <FileCheck className="h-5 w-5 text-sidebar-background" />
             </div>
             <div className="min-w-0">
               <h2 className="font-bold text-sidebar-foreground truncate">QualityDoc</h2>
-              <p className="text-xs text-muted-foreground truncate">Gestione ISO</p>
+              <p className="text-xs text-sidebar-foreground/80 truncate">Gestione ISO</p>
             </div>
           </div>
         ) : (
           <div className="flex justify-center">
-            <div className="rounded-lg bg-primary p-2">
-              <FileCheck className="h-5 w-5 text-primary-foreground" />
+            <div className="rounded-lg bg-sidebar-foreground p-2">
+              <FileCheck className="h-5 w-5 text-sidebar-background" />
             </div>
           </div>
         )}
@@ -47,7 +47,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          {open && <SidebarGroupLabel className="text-muted-foreground">Navigazione</SidebarGroupLabel>}
+          {open && <SidebarGroupLabel className="text-sidebar-foreground/80">Navigazione</SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
@@ -57,7 +57,7 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-primary text-primary-foreground font-medium"
+                          ? "bg-sidebar-foreground text-sidebar-background font-medium"
                           : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       }
                       end={item.url === "/"}
