@@ -21,6 +21,7 @@ export type Database = {
           author: string | null
           category: Database["public"]["Enums"]["document_category"]
           code: string | null
+          content: string | null
           created_at: string
           description: string | null
           file_name: string | null
@@ -40,6 +41,7 @@ export type Database = {
           author?: string | null
           category: Database["public"]["Enums"]["document_category"]
           code?: string | null
+          content?: string | null
           created_at?: string
           description?: string | null
           file_name?: string | null
@@ -59,6 +61,7 @@ export type Database = {
           author?: string | null
           category?: Database["public"]["Enums"]["document_category"]
           code?: string | null
+          content?: string | null
           created_at?: string
           description?: string | null
           file_name?: string | null
