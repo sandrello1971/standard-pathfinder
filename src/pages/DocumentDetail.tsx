@@ -237,7 +237,7 @@ const DocumentDetail = () => {
                 <Textarea
                   value={editedContent}
                   onChange={(e) => setEditedContent(e.target.value)}
-                  className="min-h-[600px] font-mono text-sm"
+                  className="min-h-[800px] font-mono text-sm resize-y"
                   placeholder="Inserisci il contenuto del documento..."
                 />
               ) : (
