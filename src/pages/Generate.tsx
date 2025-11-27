@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +36,31 @@ const Generate = () => {
   const [customStandard, setCustomStandard] = useState("");
   const [isSearchingStandard, setIsSearchingStandard] = useState(false);
   const [standardInfo, setStandardInfo] = useState("");
+
+  const generateDocumentCode = (std: string) => {
+    const standardPrefixes: Record<string, string> = {
+      "ISO 9001:2015": "QMS",
+      "ISO 14001:2015": "EMS",
+      "ISO 45001:2018": "HSE",
+      "ISO 27001:2022": "ISM",
+      "ISO 13485:2016": "MED",
+      "ISO 22000:2018": "FSM",
+      "ISO 50001:2018": "ENM",
+    };
+
+    const prefix = standardPrefixes[std] || "DOC";
+    const timestamp = Date.now().toString().slice(-6);
+    const year = new Date().getFullYear();
+    
+    return `${prefix}-${timestamp}-${year}`;
+  };
+
+  useEffect(() => {
+    const finalStandard = standard === "custom" ? customStandard : standard;
+    if (finalStandard && finalStandard !== "custom") {
+      setCode(generateDocumentCode(finalStandard));
+    }
+  }, [standard, customStandard]);
 
   const documentTypes = [
     { value: "procedure", label: "Procedura Operativa" },
