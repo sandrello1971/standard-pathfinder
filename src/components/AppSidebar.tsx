@@ -1,8 +1,9 @@
-import { Home, FolderOpen, Wand2, FileCheck, Settings } from "lucide-react";
+import { Home, FolderOpen, Wand2, FileCheck, Settings, LogOut, User, Shield } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -11,6 +12,17 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const navigationItems = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -22,6 +34,12 @@ const navigationItems = [
 
 export function AppSidebar() {
   const { open } = useSidebar();
+  const { user, isAdmin, signOut } = useAuth();
+
+  const getUserInitials = () => {
+    const email = user?.email || '';
+    return email.substring(0, 2).toUpperCase();
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r bg-sidebar-background">
@@ -72,6 +90,55 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton className="w-full">
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className="text-xs">
+                      {getUserInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {open && (
+                    <div className="flex flex-col items-start min-w-0 flex-1">
+                      <span className="text-sm font-medium truncate w-full">
+                        {user?.email?.split('@')[0]}
+                      </span>
+                      {isAdmin && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Shield className="h-3 w-3" />
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="top" align="end" className="w-56">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user?.email}</p>
+                    {isAdmin && (
+                      <p className="text-xs leading-none text-muted-foreground flex items-center gap-1">
+                        <Shield className="h-3 w-3" />
+                        Amministratore
+                      </p>
+                    )}
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => signOut()}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Esci
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
