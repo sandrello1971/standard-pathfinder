@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Wand2, FileText, Copy, Search } from "lucide-react";
+import { Loader2, Wand2, FileText, Copy, Search, Save, Edit, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDocumentSchema } from "@/lib/validations";
 
@@ -28,6 +28,9 @@ const Generate = () => {
   const [customType, setCustomType] = useState("");
   const [content, setContent] = useState("");
   const [result, setResult] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedResult, setEditedResult] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   // Metadata
   const [title, setTitle] = useState("");
@@ -176,6 +179,8 @@ const Generate = () => {
       }
 
       setResult(data.document);
+      setEditedResult(data.document);
+      setIsEditMode(false);
       toast({
         title: "Documento Generato",
         description: "Il documento è stato generato con successo",
@@ -193,11 +198,83 @@ const Generate = () => {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(result);
+    const textToCopy = isEditMode ? editedResult : result;
+    navigator.clipboard.writeText(textToCopy);
     toast({
       title: "Copiato!",
       description: "Documento copiato negli appunti",
     });
+  };
+
+  const saveToLibrary = async () => {
+    if (!title || !code) {
+      toast({
+        title: "Errore",
+        description: "Titolo e codice sono obbligatori per salvare il documento",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const finalStandard = standard === "custom" ? customStandard : standard;
+    const documentToSave = isEditMode ? editedResult : result;
+
+    setIsSaving(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        toast({
+          title: "Errore",
+          description: "Devi essere autenticato per salvare documenti",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Map document type to category
+      const categoryMap: Record<string, string> = {
+        procedure: "procedure_operative",
+        process: "procedure_operative",
+        manuale_qualita: "iso_9001",
+        istruzione_lavoro: "procedure_operative",
+        modulistica: "moduli_template",
+        piano_audit: "audit_verifiche",
+        report_audit: "audit_verifiche",
+        analisi_rischi: "iso_9001",
+        piano_miglioramento: "iso_9001",
+        gestione_nc: "iso_9001",
+        azioni_correttive: "iso_9001",
+        minutes: "procedure_operative",
+      };
+
+      const category = categoryMap[documentType] || "iso_9001";
+
+      const { error } = await supabase.from("documents").insert({
+        title,
+        code: code || undefined,
+        category: category as any,
+        description: documentToSave.substring(0, 500),
+        user_id: userData.user.id,
+        status: "draft" as any,
+        tags: finalStandard ? [finalStandard] : undefined,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Documento Salvato",
+        description: "Il documento è stato salvato nella libreria",
+      });
+    } catch (error) {
+      console.error("Error saving document:", error);
+      toast({
+        title: "Errore",
+        description: error instanceof Error ? error.message : "Errore durante il salvataggio",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -356,12 +433,65 @@ const Generate = () => {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Documento Generato</span>
-              {result && (
-                <Button variant="ghost" size="sm" onClick={copyToClipboard}>
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copia
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {result && !isEditMode && (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={() => setIsEditMode(true)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Modifica
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={copyToClipboard}>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copia
+                    </Button>
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={saveToLibrary}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4 mr-2" />
+                      )}
+                      Salva in Libreria
+                    </Button>
+                  </>
+                )}
+                {isEditMode && (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={copyToClipboard}>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copia
+                    </Button>
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={() => {
+                        setResult(editedResult);
+                        setIsEditMode(false);
+                      }}
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Conferma
+                    </Button>
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={saveToLibrary}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4 mr-2" />
+                      )}
+                      Salva in Libreria
+                    </Button>
+                  </>
+                )}
+              </div>
             </CardTitle>
             <CardDescription>
               Documento pronto per l'uso e la personalizzazione
@@ -369,11 +499,19 @@ const Generate = () => {
           </CardHeader>
           <CardContent>
             {result ? (
-              <div className="prose prose-sm max-w-none">
-                <div className="bg-muted p-4 rounded-lg whitespace-pre-wrap text-sm max-h-[600px] overflow-y-auto">
-                  {result}
+              isEditMode ? (
+                <Textarea
+                  value={editedResult}
+                  onChange={(e) => setEditedResult(e.target.value)}
+                  className="min-h-[600px] font-mono text-sm"
+                />
+              ) : (
+                <div className="prose prose-sm max-w-none">
+                  <div className="bg-muted p-4 rounded-lg whitespace-pre-wrap text-sm max-h-[600px] overflow-y-auto">
+                    {result}
+                  </div>
                 </div>
-              </div>
+              )
             ) : (
               <div className="text-center text-muted-foreground py-12">
                 <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
