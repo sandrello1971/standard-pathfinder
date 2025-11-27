@@ -66,7 +66,8 @@ const RecentDocuments = () => {
                   return (
                     <div
                       key={doc.id}
-                      className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                      onClick={() => navigate(`/documents/${doc.id}`)}
+                      className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-4 flex-1">
                         <div className="rounded-lg bg-primary/10 p-3">
@@ -101,7 +102,14 @@ const RecentDocuments = () => {
                             locale: it,
                           })}
                         </span>
-                        <Button variant="ghost" size="icon">
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/documents/${doc.id}`);
+                          }}
+                        >
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </div>

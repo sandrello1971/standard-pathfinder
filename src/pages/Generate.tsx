@@ -292,6 +292,7 @@ const Generate = () => {
         code: code || undefined,
         category: category as any,
         description: documentToSave.substring(0, 500),
+        content: documentToSave,
         user_id: userData.user.id,
         status: "draft" as any,
         tags: finalStandard ? [finalStandard] : undefined,

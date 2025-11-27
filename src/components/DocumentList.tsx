@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ interface DocumentListProps {
 
 const DocumentList = ({ category, categoryLabel, open, onOpenChange, refreshTrigger }: DocumentListProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -183,7 +185,11 @@ const DocumentList = ({ category, categoryLabel, open, onOpenChange, refreshTrig
             documents.map((doc) => (
               <div
                 key={doc.id}
-                className="flex items-start justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate(`/documents/${doc.id}`);
+                }}
+                className="flex items-start justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer"
               >
                 <div className="flex items-start gap-4 flex-1 min-w-0">
                   <div className="rounded-lg bg-primary/10 p-3 shrink-0">
@@ -232,7 +238,10 @@ const DocumentList = ({ category, categoryLabel, open, onOpenChange, refreshTrig
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => downloadDocument(doc)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        downloadDocument(doc);
+                      }}
                       title="Scarica file"
                     >
                       <Download className="h-4 w-4" />
@@ -241,7 +250,10 @@ const DocumentList = ({ category, categoryLabel, open, onOpenChange, refreshTrig
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => deleteDocument(doc)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteDocument(doc);
+                    }}
                     title="Elimina documento"
                   >
                     <Trash2 className="h-4 w-4" />
