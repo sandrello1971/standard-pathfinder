@@ -40,7 +40,7 @@ const Generate = () => {
   const [isSearchingStandard, setIsSearchingStandard] = useState(false);
   const [standardInfo, setStandardInfo] = useState("");
 
-  const generateDocumentCode = (std: string) => {
+  const generateDocumentCode = (std: string, docType: string) => {
     const standardPrefixes: Record<string, string> = {
       "ISO 9001:2015": "QMS",
       "ISO 14001:2015": "EMS",
@@ -51,19 +51,36 @@ const Generate = () => {
       "ISO 50001:2018": "ENM",
     };
 
-    const prefix = standardPrefixes[std] || "DOC";
-    const timestamp = Date.now().toString().slice(-6);
+    const documentTypePrefixes: Record<string, string> = {
+      procedure: "PROC",
+      process: "PRCS",
+      minutes: "MIN",
+      manuale_qualita: "MQ",
+      istruzione_lavoro: "IL",
+      modulistica: "MOD",
+      piano_audit: "PA",
+      report_audit: "RA",
+      analisi_rischi: "AR",
+      piano_miglioramento: "PM",
+      gestione_nc: "NC",
+      azioni_correttive: "AC",
+      custom: "DOC",
+    };
+
+    const standardPrefix = standardPrefixes[std] || "ISO";
+    const typePrefix = documentTypePrefixes[docType] || "DOC";
+    const timestamp = Date.now().toString().slice(-4);
     const year = new Date().getFullYear();
     
-    return `${prefix}-${timestamp}-${year}`;
+    return `${standardPrefix}-${typePrefix}-${timestamp}-${year}`;
   };
 
   useEffect(() => {
     const finalStandard = standard === "custom" ? customStandard : standard;
-    if (finalStandard && finalStandard !== "custom") {
-      setCode(generateDocumentCode(finalStandard));
+    if (finalStandard && finalStandard !== "custom" && documentType) {
+      setCode(generateDocumentCode(finalStandard, documentType));
     }
-  }, [standard, customStandard]);
+  }, [standard, customStandard, documentType]);
 
   const documentTypes = [
     { value: "procedure", label: "Procedura Operativa" },
@@ -249,6 +266,27 @@ const Generate = () => {
 
       const category = categoryMap[documentType] || "iso_9001";
 
+      // Check if document with same code exists
+      const { data: existingDocs } = await supabase
+        .from("documents")
+        .select("version")
+        .eq("code", code)
+        .eq("user_id", userData.user.id)
+        .order("version", { ascending: false })
+        .limit(1);
+
+      let newVersion = "1.0";
+      if (existingDocs && existingDocs.length > 0) {
+        const lastVersion = existingDocs[0].version || "1.0";
+        const [major, minor] = lastVersion.split(".").map(Number);
+        newVersion = `${major}.${minor + 1}`;
+        
+        toast({
+          title: "Nuova Versione",
+          description: `Trovata versione precedente ${lastVersion}. Salvataggio come versione ${newVersion}`,
+        });
+      }
+
       const { error } = await supabase.from("documents").insert({
         title,
         code: code || undefined,
@@ -257,13 +295,14 @@ const Generate = () => {
         user_id: userData.user.id,
         status: "draft" as any,
         tags: finalStandard ? [finalStandard] : undefined,
+        version: newVersion,
       });
 
       if (error) throw error;
 
       toast({
         title: "Documento Salvato",
-        description: "Il documento è stato salvato nella libreria",
+        description: `Documento salvato nella libreria (versione ${newVersion})`,
       });
     } catch (error) {
       console.error("Error saving document:", error);
