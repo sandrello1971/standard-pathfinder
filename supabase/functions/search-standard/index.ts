@@ -65,7 +65,11 @@ Rispondi in italiano e in modo strutturato.`
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Perplexity API error:', response.status, errorText);
+      console.error('Perplexity API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
       
       if (response.status === 429) {
         return new Response(
@@ -74,8 +78,15 @@ Rispondi in italiano e in modo strutturato.`
         );
       }
       
+      if (response.status === 401) {
+        return new Response(
+          JSON.stringify({ error: 'Chiave API Perplexity non valida. Verifica la configurazione.' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       return new Response(
-        JSON.stringify({ error: 'Errore nel servizio di ricerca' }),
+        JSON.stringify({ error: `Errore nel servizio di ricerca: ${errorText}` }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
