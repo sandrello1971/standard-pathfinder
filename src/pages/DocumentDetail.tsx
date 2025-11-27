@@ -252,7 +252,7 @@ const DocumentDetail = () => {
                       </Button>
                     </div>
                   ) : (
-                    <div className="bg-muted p-6 rounded-lg whitespace-pre-wrap text-sm max-h-[600px] overflow-y-auto">
+                    <div className="bg-muted p-6 rounded-lg whitespace-pre-wrap text-sm overflow-y-auto">
                       {document.content || document.description}
                     </div>
                   )}
