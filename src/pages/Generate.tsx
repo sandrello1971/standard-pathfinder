@@ -6,9 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Wand2, FileText, Copy } from "lucide-react";
+import { Loader2, Wand2, FileText, Copy, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDocumentSchema } from "@/lib/validations";
+
+const ISO_STANDARDS = [
+  { value: "ISO 9001:2015", label: "ISO 9001:2015 - Sistema di Gestione Qualità" },
+  { value: "ISO 14001:2015", label: "ISO 14001:2015 - Sistema di Gestione Ambientale" },
+  { value: "ISO 45001:2018", label: "ISO 45001:2018 - Sistema di Gestione Salute e Sicurezza" },
+  { value: "ISO 27001:2022", label: "ISO 27001:2022 - Sistema di Gestione Sicurezza Informazioni" },
+  { value: "ISO 13485:2016", label: "ISO 13485:2016 - Dispositivi Medici" },
+  { value: "ISO 22000:2018", label: "ISO 22000:2018 - Sicurezza Alimentare" },
+  { value: "ISO 50001:2018", label: "ISO 50001:2018 - Sistema di Gestione Energia" },
+  { value: "custom", label: "Altro standard..." },
+];
 
 const Generate = () => {
   const { toast } = useToast();
@@ -22,6 +33,9 @@ const Generate = () => {
   const [title, setTitle] = useState("");
   const [code, setCode] = useState("");
   const [standard, setStandard] = useState("ISO 9001:2015");
+  const [customStandard, setCustomStandard] = useState("");
+  const [isSearchingStandard, setIsSearchingStandard] = useState(false);
+  const [standardInfo, setStandardInfo] = useState("");
 
   const documentTypes = [
     { value: "procedure", label: "Procedura Operativa" },
@@ -55,15 +69,55 @@ const Generate = () => {
     custom: "Descrivi il tipo di documento che vuoi generare e le sue caratteristiche...",
   };
 
+  const searchStandard = async () => {
+    const finalStandard = standard === "custom" ? customStandard : standard;
+    if (!finalStandard) {
+      toast({
+        title: "Errore",
+        description: "Seleziona o inserisci uno standard",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSearchingStandard(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('search-standard', {
+        body: { standard: finalStandard }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setStandardInfo(data.standardInfo);
+      toast({
+        title: "Informazioni recuperate",
+        description: "Informazioni sullo standard recuperate con successo",
+      });
+    } catch (error: any) {
+      console.error('Search error:', error);
+      toast({
+        title: "Errore",
+        description: error.message || "Errore durante la ricerca dello standard",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearchingStandard(false);
+    }
+  };
+
   const generateDocument = async () => {
+    const finalStandard = standard === "custom" ? customStandard : standard;
+    const enrichedContent = standardInfo ? `${content}\n\nInformazioni standard di riferimento:\n${standardInfo}` : content;
+    
     // Validate input
     const validation = generateDocumentSchema.safeParse({
       documentType,
       customType: documentType === "custom" ? customType : "",
       title,
       code: code || "",
-      standard: standard || "",
-      content,
+      standard: finalStandard || "",
+      content: enrichedContent,
     });
 
     if (!validation.success) {
@@ -190,12 +244,55 @@ const Generate = () => {
 
             <div className="space-y-2">
               <Label htmlFor="standard">Standard di Riferimento</Label>
-              <Input
-                id="standard"
-                value={standard}
-                onChange={(e) => setStandard(e.target.value)}
-                placeholder="es. ISO 9001:2015"
-              />
+              <Select value={standard} onValueChange={setStandard}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleziona uno standard" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ISO_STANDARDS.map((std) => (
+                    <SelectItem key={std.value} value={std.value}>
+                      {std.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {standard === "custom" && (
+                <Input
+                  placeholder="Inserisci standard personalizzato"
+                  value={customStandard}
+                  onChange={(e) => setCustomStandard(e.target.value)}
+                  className="mt-2"
+                />
+              )}
+              
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={searchStandard}
+                disabled={isSearchingStandard || (!standard || (standard === "custom" && !customStandard))}
+                className="w-full mt-2"
+              >
+                {isSearchingStandard ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Ricerca in corso...
+                  </>
+                ) : (
+                  <>
+                    <Search className="mr-2 h-4 w-4" />
+                    Cerca info standard con Perplexity
+                  </>
+                )}
+              </Button>
+              
+              {standardInfo && (
+                <div className="mt-2 p-3 bg-muted rounded-md text-sm">
+                  <p className="font-semibold mb-1">Informazioni standard:</p>
+                  <p className="text-muted-foreground line-clamp-3">{standardInfo.substring(0, 150)}...</p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
