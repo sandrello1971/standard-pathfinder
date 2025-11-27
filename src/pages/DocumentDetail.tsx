@@ -52,7 +52,9 @@ const DocumentDetail = () => {
       if (error) throw error;
 
       setDocument(data);
-      setEditedContent(data.content || "");
+      // Se content è vuoto ma c'è description, usa quella
+      const initialContent = data.content || data.description || "";
+      setEditedContent(initialContent);
     } catch (error: any) {
       toast({
         title: "Errore",
@@ -236,13 +238,24 @@ const DocumentDetail = () => {
                   value={editedContent}
                   onChange={(e) => setEditedContent(e.target.value)}
                   className="min-h-[600px] font-mono text-sm"
-                  placeholder="Contenuto del documento..."
+                  placeholder="Inserisci il contenuto del documento..."
                 />
               ) : (
                 <div className="prose prose-sm max-w-none">
-                  <div className="bg-muted p-6 rounded-lg whitespace-pre-wrap text-sm max-h-[600px] overflow-y-auto">
-                    {document.content || "Nessun contenuto disponibile"}
-                  </div>
+                  {!document.content && !document.description ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p className="mb-4">Questo documento non ha ancora contenuto</p>
+                      <Button onClick={() => setIsEditing(true)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Aggiungi Contenuto
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="bg-muted p-6 rounded-lg whitespace-pre-wrap text-sm max-h-[600px] overflow-y-auto">
+                      {document.content || document.description}
+                    </div>
+                  )}
                 </div>
               )}
             </TabsContent>
